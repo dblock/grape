@@ -54,7 +54,6 @@ shared_examples_for 'versioning' do
     versioned_get '/awesome', 'v3', macro_options
     last_response.status.should eql 404
   end
-
   context 'with different versions for the same endpoint' do
     context 'without a prefix' do
       it 'allows the same endpoint to be implemented' do
@@ -77,7 +76,6 @@ shared_examples_for 'versioning' do
         last_response.body.should == 'version v1'
       end
     end
-
     context 'with a prefix' do
       it 'allows the same endpoint to be implemented' do
         subject.prefix 'api'
@@ -92,10 +90,10 @@ shared_examples_for 'versioning' do
           end
         end
 
-        versioned_get '/api/version', 'v2', macro_options
+        versioned_get '/version', 'v2', macro_options.merge({ :prefix => 'api' })
         last_response.status.should == 200
         last_response.body.should == 'v2'
-        versioned_get '/api/version', 'v1', macro_options
+        versioned_get '/version', 'v1', macro_options.merge({ :prefix => 'api' })
         last_response.status.should == 200
         last_response.body.should == 'version v1'
       end

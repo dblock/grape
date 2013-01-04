@@ -190,12 +190,6 @@ describe Grape::API do
     end
 
     describe 'root routes should work with' do
-      before do
-        def subject.enable_root_route!
-          self.get("/") {"root"}
-        end
-      end
-
       after do
         last_response.body.should eql 'root'
       end
@@ -203,7 +197,9 @@ describe Grape::API do
       describe 'path versioned APIs' do
         before do
           subject.version 'v1', :using => :path
-          subject.enable_root_route!
+          subject.get "/" do
+            "root"
+          end
         end
 
         it 'without a format' do
@@ -217,20 +213,26 @@ describe Grape::API do
 
       it 'header versioned APIs' do
         subject.version 'v1', :using => :header, :vendor => 'test'
-        subject.enable_root_route!
+        subject.get "/" do
+          "root"
+        end
 
         versioned_get "/", "v1", :using => :header
       end
 
       it 'param versioned APIs' do
         subject.version 'v1', :using => :param
-        subject.enable_root_route!
+        subject.get "/" do
+          "root"
+        end
 
         versioned_get "/", "v1", :using => :param
       end
 
       it 'unversioned APIs' do
-        subject.enable_root_route!
+        subject.get "/" do
+          "root"
+        end
 
         get "/"
       end
@@ -1132,8 +1134,8 @@ describe Grape::API do
       end
       it 'sets route paths' do
          subject.routes.size.should >= 2
-         subject.routes[0].route_path.should == "/:version/version(.:format)"
-         subject.routes[1].route_path.should == "/p/:version/n1/n2/version(.:format)"
+         subject.routes[0].route_path.should == "/v1/version(.:format)"
+         subject.routes[1].route_path.should == "/p/v2/n1/n2/version(.:format)"
       end
       it 'sets route versions' do
          subject.routes[0].route_version.should == 'v1'

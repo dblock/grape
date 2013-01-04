@@ -435,6 +435,7 @@ module Grape
     end
 
     def call(env)
+      p "call: #{env}"
       @route_set.call(env)
     end
 

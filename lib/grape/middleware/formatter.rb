@@ -70,8 +70,7 @@ module Grape
         end
 
         def format_from_content_type
-          fmt = env['CONTENT_TYPE']
-          puts "CONTENT_TYPE: #{fmt}"
+          fmt = (env['CONTENT_TYPE'] || '').split(';').first
           # avoid symbol memory leak on an unknown format
           return fmt.to_sym if content_type_for(fmt)
           fmt

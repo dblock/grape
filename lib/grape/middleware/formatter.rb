@@ -38,7 +38,7 @@ module Grape
           if [ 'POST', 'PUT' ].include?(request_method) && (! request.form_data?) && (request.content_length.to_i > 0)
             if env['rack.input'] && (body = env['rack.input'].read).strip.length > 0
               begin
-                fmt = mime_types[format_from_content_type || env['api.format']]
+                fmt = mime_types[format_from_content_type]
                 if content_type_for(fmt)
                   parser = Grape::Parser::Base.parser_for fmt, options
                   unless parser.nil?
@@ -71,6 +71,7 @@ module Grape
 
         def format_from_content_type
           fmt = env['CONTENT_TYPE']
+          puts "CONTENT_TYPE: #{fmt}"
           # avoid symbol memory leak on an unknown format
           return fmt.to_sym if content_type_for(fmt)
           fmt

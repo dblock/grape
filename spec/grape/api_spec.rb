@@ -909,6 +909,68 @@ describe Grape::API do
       end
       lambda{get '/howdy'}.should_not raise_error
     end
+
+    context "stubbing"do
+
+      it "allows stubbing helpers" do
+        puts "declare"
+        subject.helpers do
+          def foo
+            'foo'
+          end
+        end
+
+        subject.get "/" do
+          foo
+        end
+
+        get "/"
+        last_response.body.should eql "foo"
+
+        subject.helpers.stub!(:foo).and_return("bar")
+
+        get "/"
+        last_response.body.should eql "bar"
+      end
+
+      it "allows stubbing nested helpers" do
+        subject.helpers do
+          def foo
+            'foo'
+          end
+        end
+
+        subject.get "/" do
+          foo
+        end
+
+        subject.namespace :random do
+          helpers do
+            def foo
+              'bar'
+            end
+          end
+
+          get :what do
+            foo
+          end
+        end
+
+        get '/random/what'
+        last_response.body.should == 'bar'
+
+        get '/'
+        last_response.body.should == 'foo'
+
+        subject.helpers.stub!(:foo).and_return("baz")
+        get '/'
+        last_response.body.should == 'baz'
+        get '/random/what'
+        last_response.body.should == 'baz'
+      end
+
+    end
+
   end
 
   describe '.scope' do

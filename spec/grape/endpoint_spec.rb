@@ -9,8 +9,8 @@ describe Grape::Endpoint do
       p = Proc.new {}
       expect {
         Grape::Endpoint.new(Grape::Util::HashStack.new, {
-          :path => '/',
-          :method => :get
+          path: '/',
+          method: :get
         }, &p)
       }.not_to raise_error
     end
@@ -77,10 +77,10 @@ describe Grape::Endpoint do
       subject.get('/get/cookies') do
         cookies['my-awesome-cookie1'] = 'is cool'
         cookies['my-awesome-cookie2'] = {
-            :value => 'is cool too',
-            :domain => 'my.example.com',
-            :path => '/',
-            :secure => true,
+            value: 'is cool too',
+            domain: 'my.example.com',
+            path: '/',
+            secure: true,
         }
         cookies[:cookie3] = 'symbol'
         cookies['cookie4'] = 'secret code here'
@@ -147,7 +147,7 @@ describe Grape::Endpoint do
         sum = 0
         cookies.each do |name, val|
           sum += val.to_i
-          cookies.delete name, { :path => '/test' }
+          cookies.delete name, { path: '/test' }
         end
         sum
       end
@@ -173,7 +173,7 @@ describe Grape::Endpoint do
       subject.params do
         requires :first
         optional :second
-        optional :third, :default => 'third-default'
+        optional :third, default: 'third-default'
         group :nested do
           optional :fourth
         end
@@ -232,7 +232,7 @@ describe Grape::Endpoint do
 
     it 'stringifies if that option is passed' do
       subject.get '/declared' do
-        declared(params, :stringify => true)["first"].should == "one"
+        declared(params, stringify: true)["first"].should == "one"
         ""
       end
 
@@ -242,7 +242,7 @@ describe Grape::Endpoint do
 
     it 'does not include missing attributes if that option is passed' do
       subject.get '/declared' do
-        declared(params, :include_missing => false)[:second].should == nil
+        declared(params, include_missing: false)[:second].should == nil
         ""
       end
 
@@ -280,7 +280,7 @@ describe Grape::Endpoint do
 
     context 'with special requirements' do
       it 'parses email param with provided requirements for params' do
-        subject.get('/:person_email', :requirements => { :person_email => /.*/ }) do
+        subject.get('/:person_email', requirements: { person_email: /.*/ }) do
         params[:person_email]
         end
 
@@ -293,9 +293,9 @@ describe Grape::Endpoint do
 
       it 'parses many params with provided regexps' do
         subject.get('/:person_email/test/:number',
-          :requirements => {
-            :person_email => /someone@(.*).com/,
-            :number => /[0-9]/ }) do
+          requirements: {
+            person_email: /someone@(.*).com/,
+            number: /[0-9]/ }) do
         params[:person_email] << params[:number]
         end
 
@@ -314,12 +314,12 @@ describe Grape::Endpoint do
 
       context 'namespace requirements' do
         before :each do
-          subject.namespace :outer, :requirements => { :person_email => /abc@(.*).com/ } do
+          subject.namespace :outer, requirements: { person_email: /abc@(.*).com/ } do
             get('/:person_email') do
               params[:person_email]
             end
 
-            namespace :inner, :requirements => {:number => /[0-9]/, :person_email => /someone@(.*).com/ }do
+            namespace :inner, requirements: {number: /[0-9]/, person_email: /someone@(.*).com/ }do
               get '/:person_email/test/:number' do
                 params[:person_email] << params[:number]
               end
@@ -354,7 +354,7 @@ describe Grape::Endpoint do
       end
 
       it 'converts JSON bodies to params' do
-        post '/request_body', MultiJson.dump(:user => 'Bobby T.'), {'CONTENT_TYPE' => 'application/json'}
+        post '/request_body', MultiJson.dump(user: 'Bobby T.'), {'CONTENT_TYPE' => 'application/json'}
         last_response.body.should == 'Bobby T.'
       end
 
@@ -378,7 +378,7 @@ describe Grape::Endpoint do
           params[:version].should == nil
           params[:user].should == 'Bob'
         end
-        post '/omitted_params', MultiJson.dump(:user => 'Bob'), {'CONTENT_TYPE' => 'application/json'}
+        post '/omitted_params', MultiJson.dump(user: 'Bob'), {'CONTENT_TYPE' => 'application/json'}
       end
     end
 
@@ -450,7 +450,7 @@ describe Grape::Endpoint do
 
     it 'support permanent redirect' do
       subject.get('/hey') do
-        redirect "/ha", :permanent => true
+        redirect "/ha", permanent: true
       end
       get '/hey'
       last_response.status.should eq 301
@@ -464,10 +464,10 @@ describe Grape::Endpoint do
       params[:text]
     end
 
-    post '/new', :text => 'abc'
+    post '/new', text: 'abc'
     last_response.body.should == 'abc'
 
-    post '/new', :text => 'def'
+    post '/new', text: 'def'
     last_response.body.should == 'def'
   end
 
@@ -547,7 +547,7 @@ describe Grape::Endpoint do
 
     verbs.each do |verb|
       it 'allows for the anchoring option with a #{verb.upcase} method' do
-        subject.send(verb, '/example', :anchor => true) do
+        subject.send(verb, '/example', anchor: true) do
           verb
         end
         send(verb, '/example/and/some/more')
@@ -563,7 +563,7 @@ describe Grape::Endpoint do
       end
 
       it 'responds to /example/and/some/more for the non-anchored #{verb.upcase} method' do
-        subject.send(verb, '/example', :anchor => false) do
+        subject.send(verb, '/example', anchor: false) do
           verb
         end
         send(verb, '/example/and/some/more')
@@ -583,7 +583,7 @@ describe Grape::Endpoint do
     end
     [ 'v1', :v1 ].each do |version|
       it 'should include version #{version}' do
-        subject.version version, :using => :path
+        subject.version version, using: :path
         subject.get('/url') do
           request.url
         end
@@ -592,7 +592,7 @@ describe Grape::Endpoint do
       end
     end
     it 'should include prefix' do
-      subject.version 'v1', :using => :path
+      subject.version 'v1', using: :path
       subject.prefix 'api'
       subject.get('/url') do
         request.url

@@ -6,8 +6,8 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
 
   before do
     @options = {
-      :version_options => {
-        :using => :accept_version_header
+      version_options: {
+        using: :accept_version_header
       },
     }
   end
@@ -34,9 +34,9 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
         env = subject.call('HTTP_ACCEPT_VERSION' => 'v2').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'The requested version is not supported.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'The requested version is not supported.'
       )
     end
   end
@@ -63,9 +63,9 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
         env = subject.call({}).last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept-Version header must be set.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept-Version header must be set.'
       )
     end
 
@@ -74,9 +74,9 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
         env = subject.call('HTTP_ACCEPT_VERSION' => '').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept-Version header must be set.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept-Version header must be set.'
       )
     end
 
@@ -97,9 +97,9 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
         env = subject.call({}).last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept-Version header must be set.'
+        status: 406,
+        headers: {},
+        message: 'Accept-Version header must be set.'
       )
     end
 
@@ -108,9 +108,9 @@ describe Grape::Middleware::Versioner::AcceptVersionHeader do
         env = subject.call('HTTP_ACCEPT_VERSION' => '').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept-Version header must be set.'
+        status: 406,
+        headers: {},
+        message: 'Accept-Version header must be set.'
       )
     end
 

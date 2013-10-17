@@ -136,7 +136,7 @@ describe Grape::Middleware::Formatter do
     end
 
     it 'parses headers with symbols as hash keys' do
-      subject.call({'PATH_INFO' => '/info', 'http_accept' => 'application/xml', :system_time => '091293'})
+      subject.call({'PATH_INFO' => '/info', 'http_accept' => 'application/xml', system_time: '091293'})
       subject.env[:system_time].should == '091293'
     end
   end

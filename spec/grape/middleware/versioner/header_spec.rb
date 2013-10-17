@@ -6,9 +6,9 @@ describe Grape::Middleware::Versioner::Header do
 
   before do
     @options = {
-      :version_options => {
-        :using => :header,
-        :vendor => 'vendor',
+      version_options: {
+        using: :header,
+        vendor: 'vendor',
       },
     }
   end
@@ -88,9 +88,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => 'application/vnd.othervendor+json').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'API vendor or version not found.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'API vendor or version not found.'
       )
     end
 
@@ -116,9 +116,9 @@ describe Grape::Middleware::Versioner::Header do
           env = subject.call('HTTP_ACCEPT' => 'application/vnd.othervendor-v1+json').last
         }.to throw_symbol(
           :error,
-          :status => 406,
-          :headers => {'X-Cascade' => 'pass'},
-          :message => 'API vendor or version not found.'
+          status: 406,
+          headers: { 'X-Cascade' => 'pass' },
+          message: 'API vendor or version not found.'
         )
       end
     end
@@ -146,9 +146,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => 'application/vnd.vendor-v2+json').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'API vendor or version not found.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'API vendor or version not found.'
       )
     end
   end
@@ -175,9 +175,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call({}).last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept header must be set.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept header must be set.'
       )
     end
 
@@ -186,9 +186,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => '').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept header must be set.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept header must be set.'
       )
     end
 
@@ -197,9 +197,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => '*/*').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept header must not contain ranges ("*").'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept header must not contain ranges ("*").'
       )
     end
 
@@ -208,9 +208,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => 'application/*').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'Accept header must not contain ranges ("*").'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'Accept header must not contain ranges ("*").'
       )
     end
 
@@ -231,9 +231,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call({}).last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept header must be set.'
+        status: 406,
+        headers: {},
+        message: 'Accept header must be set.'
       )
     end
 
@@ -242,9 +242,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => '').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept header must be set.'
+        status: 406,
+        headers: {},
+        message: 'Accept header must be set.'
       )
     end
 
@@ -253,9 +253,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => '*/*').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept header must not contain ranges ("*").'
+        status: 406,
+        headers: {},
+        message: 'Accept header must not contain ranges ("*").'
       )
     end
 
@@ -264,9 +264,9 @@ describe Grape::Middleware::Versioner::Header do
         env = subject.call('HTTP_ACCEPT' => 'application/*').last
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {},
-        :message => 'Accept header must not contain ranges ("*").'
+        status: 406,
+        headers: {},
+        message: 'Accept header must not contain ranges ("*").'
       )
     end
 
@@ -293,9 +293,9 @@ describe Grape::Middleware::Versioner::Header do
         subject.call('HTTP_ACCEPT' => 'application/vnd.vendor-v3+json')
       }.to throw_symbol(
         :error,
-        :status => 406,
-        :headers => {'X-Cascade' => 'pass'},
-        :message => 'API vendor or version not found.'
+        status: 406,
+        headers: { 'X-Cascade' => 'pass' },
+        message: 'API vendor or version not found.'
       )
     end
   end

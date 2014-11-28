@@ -77,6 +77,48 @@ describe Grape::Validations::ValuesValidator do
           end
         end
         get '/optional_with_required_values'
+
+        params do
+          optional :type, type: String, allow_blank: false
+        end
+        get '/values/optional_does_not_allow_nil_for_string' do
+          { type: params[:type] }
+        end
+
+        params do
+          requires :type, type: String, allow_blank: false
+        end
+        get '/values/required_does_not_allow_nil_for_string' do
+          { type: params[:type] }
+        end
+
+        params do
+          optional :type, type: Integer, allow_blank: false
+        end
+        get '/values/optional_does_not_allow_nil_for_integer' do
+          { type: params[:type] }
+        end
+
+        params do
+          requires :type, type: Integer, allow_blank: false
+        end
+        get '/values/required_does_not_allow_nil_for_integer' do
+          { type: params[:type] }
+        end
+
+        params do
+          optional :type, type: Hash, allow_blank: false
+        end
+        post '/values/optional_does_not_allow_nil_for_hash' do
+          { type: params[:type] }
+        end
+
+        params do
+          requires :type, type: Hash, allow_blank: false
+        end
+        post '/values/required_does_not_allow_nil_for_hash' do
+          { type: params[:type] }
+        end
       end
     end
   end
@@ -166,6 +208,172 @@ describe Grape::Validations::ValuesValidator do
     expect {
       subject.params { optional :type, values: -> { ValuesModel.values }, default: -> { ValuesModel.values.sample + "_invalid" } }
     }.to raise_error Grape::Exceptions::IncompatibleOptionValues
+  end
+
+  context 'when type is Integer' do
+    cases = {
+              {}           => 200,
+              { type: 5 }  => 200,
+              { type: '5'} => 200,
+              { type: nil }        => { error: 'type is empty' },
+              { type: 'gofish' }   => { error: 'type is invalid' },
+              { type: '' }         => { error: 'type is invalid, type is empty' },
+              { type: ['howdy'] }  => { error: 'type is invalid' } }
+
+
+    context 'when parameter is optional' do
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            get("/values/optional_does_not_allow_nil_for_integer", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 200
+              expect(last_response.status).to eq 200
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
+
+    context 'when parameter is required' do
+
+      # The only difference between optional and required is
+      # what happens if you don't pass that key in at all
+      cases = cases.merge({} => { error: "type is missing, type is empty" })
+
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            get("/values/required_does_not_allow_nil_for_integer", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 200
+              expect(last_response.status).to eq 200
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
+  end
+
+
+  context 'when type is String' do
+    cases = {
+              {}              => 200,
+              { type: 'yo' }  => 200,
+              { type: '5'}    => 200,
+              { type: nil }        => { error: 'type is empty' },
+              { type: ['howdy'] }  => { error: 'type is invalid' } }
+
+
+    context 'when parameter is optional' do
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            get("/values/optional_does_not_allow_nil_for_string", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 200
+              expect(last_response.status).to eq 200
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
+
+    context 'when parameter is required' do
+
+      # The only difference between optional and required is
+      # what happens if you don't pass that key in at all
+      cases = cases.merge({} => { error: "type is missing, type is empty" })
+
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            get("/values/required_does_not_allow_nil_for_string", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 200
+              expect(last_response.status).to eq 200
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
+  end
+
+
+  context 'when type is Hash' do
+    cases = {
+              {}                          => 201,
+              { type: { key: 'Value' } }  => 201,
+              { type: 5 }          => { error: 'type is invalid' },
+              { type: '5' }        => { error: 'type is invalid' },
+              { type: nil }        => { error: 'type is empty' },
+              { type: [{ key: 'Value'}] }  => { error: 'type is invalid' } }
+
+
+    context 'when parameter is optional' do
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            post("/values/optional_does_not_allow_nil_for_hash", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 201
+              # Note this returns 201 for 'created' since this is a POST
+              expect(last_response.status).to eq status_or_response_body
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
+
+    context 'when parameter is required' do
+
+      # The only difference between optional and required is
+      # what happens if you don't pass that key in at all
+      cases = cases.merge({} => { error: "type is missing, type is empty" })
+
+      cases.each do |params, status_or_response_body|
+        context "when params is #{params}" do
+          before do
+            post("/values/required_does_not_allow_nil_for_hash", params)
+          end
+
+          it "returns #{status_or_response_body}" do
+            if status_or_response_body == 201
+              # Note this returns 201 for 'created' since this is a POST
+              expect(last_response.status).to eq status_or_response_body
+            else
+              expect(last_response.status).to eq 400
+              expect(last_response.body).to eq(status_or_response_body.to_json)
+            end
+          end
+        end
+      end
+    end
   end
 
   it 'raises IncompatibleOptionValues on an invalid default value' do

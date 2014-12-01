@@ -2697,15 +2697,38 @@ XML
   end
 
   context 'with json default_error_formatter' do
-    it 'returns json error' do
+    before do
       subject.content_type :json, "application/json"
       subject.default_error_formatter :json
       subject.get '/something' do
         'foo'
       end
+    end
+    it 'returns json error' do
       get '/something'
       expect(last_response.status).to eq(406)
       expect(last_response.body).to eq("{\"error\":\"The requested format 'txt' is not supported.\"}")
+    end
+  end
+
+  context 'with static variable access' do
+    before do
+      @@static_variable = 42
+
+      subject.helpers do
+        def get_static_variable
+          @@static_variable
+        end
+      end
+
+      subject.get do
+        get_static_variable
+      end
+    end
+    it 'preserves self' do
+      get '/'
+      expect(last_response.status).to eq 200
+      expect(last_response.body).to eq '42'
     end
   end
 end

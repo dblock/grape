@@ -11,6 +11,15 @@ describe Grape::Validations::AllOrNoneOfValidator do
         def required?; end
       end
     end
+    let(:request) do
+      Class.new do
+        attr_accessor :params
+
+        def initialize(params)
+          @params = params
+        end
+      end
+    end
     let(:all_or_none_params) { [:beer, :wine, :grapefruit] }
     let(:validator) { described_class.new(all_or_none_params, {}, false, scope.new) }
 
@@ -18,14 +27,14 @@ describe Grape::Validations::AllOrNoneOfValidator do
       let(:params) { { beer: true, wine: true, grapefruit: true } }
 
       it 'does not raise a validation exception' do
-        expect(validator.validate!(params)).to eql params
+        expect(validator.validate!(request.new(params))).to eql params
       end
 
       context 'mixed with other params' do
         let(:mixed_params) { params.merge!(other: true, andanother: true) }
 
         it 'does not raise a validation exception' do
-          expect(validator.validate!(mixed_params)).to eql mixed_params
+          expect(validator.validate!(request.new(mixed_params))).to eql mixed_params
         end
       end
     end
@@ -34,7 +43,7 @@ describe Grape::Validations::AllOrNoneOfValidator do
       let(:params) { { somethingelse: true } }
 
       it 'does not raise a validation exception' do
-        expect(validator.validate!(params)).to eql params
+        expect(validator.validate!(request.new(params))).to eql params
       end
     end
 
@@ -43,7 +52,7 @@ describe Grape::Validations::AllOrNoneOfValidator do
 
       it 'raises a validation exception' do
         expect do
-          validator.validate! params
+          validator.validate! request.new(params)
         end.to raise_error(Grape::Exceptions::Validation)
       end
       context 'mixed with other params' do
@@ -51,7 +60,7 @@ describe Grape::Validations::AllOrNoneOfValidator do
 
         it 'raise a validation exception' do
           expect do
-            validator.validate! params
+            validator.validate! request.new(mixed_params)
           end.to raise_error(Grape::Exceptions::Validation)
         end
       end

@@ -9,6 +9,15 @@ describe Grape::Validations::MutualExclusionValidator do
         end
       end
     end
+    let(:request) do
+      Class.new do
+        attr_accessor :params
+
+        def initialize(params)
+          @params = params
+        end
+      end
+    end
     let(:mutually_exclusive_params) { [:beer, :wine, :grapefruit] }
     let(:validator) { described_class.new(mutually_exclusive_params, {}, false, scope.new) }
 
@@ -17,7 +26,7 @@ describe Grape::Validations::MutualExclusionValidator do
 
       it 'raises a validation exception' do
         expect do
-          validator.validate! params
+          validator.validate! request.new(params)
         end.to raise_error(Grape::Exceptions::Validation)
       end
 
@@ -26,7 +35,7 @@ describe Grape::Validations::MutualExclusionValidator do
 
         it 'still raises a validation exception' do
           expect do
-            validator.validate! mixed_params
+            validator.validate! request.new(mixed_params)
           end.to raise_error(Grape::Exceptions::Validation)
         end
       end
@@ -37,7 +46,7 @@ describe Grape::Validations::MutualExclusionValidator do
 
       it 'raises a validation exception' do
         expect do
-          validator.validate! params
+          validator.validate! request.new(params)
         end.to raise_error(Grape::Exceptions::Validation)
       end
     end
@@ -47,7 +56,7 @@ describe Grape::Validations::MutualExclusionValidator do
 
       it 'raises a validation exception' do
         expect do
-          validator.validate! params
+          validator.validate! request.new(params)
         end.to raise_error(Grape::Exceptions::Validation)
       end
     end
@@ -56,7 +65,7 @@ describe Grape::Validations::MutualExclusionValidator do
       let(:params) { { beer: true, somethingelse: true } }
 
       it 'params' do
-        expect(validator.validate!(params)).to eql params
+        expect(validator.validate!(request.new(params))).to eql params
       end
     end
   end

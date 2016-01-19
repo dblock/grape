@@ -1,7 +1,6 @@
 module Grape
   module Validations
     class Base
-      attr_accessor :request
       attr_reader :attrs
 
       # Creates a new Validator from options specified
@@ -18,26 +17,12 @@ module Grape
         @scope = scope
       end
 
-      # Validates a given parameter hash.
-      # @note This method must be thread-safe. Override #validate! unless you
-      # have a specific need.
-      # @param params [Hash] parameters to validate
-      # @param request [Grape::Request] the request currently being handled
-      # @raise [Grape::Exceptions::Validation] if validation failed
-      # @return [void]
-      def validate(params, request)
-        # Create a duplicate so any per-request instance variables are thread safe.
-        validator = dup
-        validator.request = request
-        validator.validate!(params)
-      end
-
-      def validate!(params)
-        attributes = AttributesIterator.new(self, @scope, params)
-        attributes.each do |resource_params, attr_name|
-          if @required || (resource_params.respond_to?(:key?) && resource_params.key?(attr_name))
-            validate_param!(attr_name, resource_params)
-          end
+      def validate!(request_or_params)
+        if request_or_params.is_a?(Grape::Request)
+          validate_params!(request_or_params.params)
+        else
+          warn '[DEPRECATION] Grape::Validations::Base#validate!(params) has been deprectated, use validate!(request) instead.'
+          validate_params!(request_or_params)
         end
       end
 
@@ -53,6 +38,17 @@ module Grape
       def self.inherited(klass)
         short_name = convert_to_short_name(klass)
         Validations.register_validator(short_name, klass)
+      end
+
+      private
+
+      def validate_params!(params)
+        attributes = AttributesIterator.new(self, @scope, params)
+        attributes.each do |resource_params, attr_name|
+          if @required || (resource_params.respond_to?(:key?) && resource_params.key?(attr_name))
+            validate_param!(attr_name, resource_params)
+          end
+        end
       end
     end
   end

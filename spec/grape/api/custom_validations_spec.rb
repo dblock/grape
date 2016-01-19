@@ -10,9 +10,15 @@ describe Grape::Validations do
           fail Grape::Exceptions::Validation, params: [@scope.full_name(attr_name)], message: "must be at the most #{@option} characters long"
         end
       end
-      class InBody < Grape::Validations::PresenceValidator
-        def validate!(_params)
-          super(request.env['api.request.body'])
+      class InBody < Grape::Validations::Base
+        def validate!(request)
+          return unless @scope.should_validate?(request.env['api.request.body'])
+          super
+        end
+
+        def validate_param!(attr_name, params)
+          return if params.respond_to?(:key?) && params.key?(attr_name)
+          fail Grape::Exceptions::Validation, params: [@scope.full_name(attr_name)], message_key: :presence
         end
       end
     end

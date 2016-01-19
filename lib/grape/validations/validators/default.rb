@@ -10,10 +10,10 @@ module Grape
         params[attr_name] = @default.is_a?(Proc) ? @default.call : @default unless params.key?(attr_name)
       end
 
-      def validate!(params)
-        return unless @scope.should_validate?(params)
+      def validate!(request)
+        return unless @scope.should_validate?(request.params)
 
-        attrs = AttributesIterator.new(self, @scope, params)
+        attrs = AttributesIterator.new(self, @scope, request.params)
         attrs.each do |resource_params, attr_name|
           if resource_params.is_a?(Hash) && resource_params[attr_name].nil?
             validate_param!(attr_name, resource_params)

@@ -11,8 +11,8 @@ describe Grape::Validations do
         end
       end
       class InBody < Grape::Validations::PresenceValidator
-        def validate!(_params)
-          super(request.env['api.request.body'])
+        def validate(request)
+          validate!(request.env['api.request.body'])
         end
       end
     end

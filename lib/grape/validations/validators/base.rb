@@ -18,18 +18,13 @@ module Grape
         @scope = scope
       end
 
-      # Validates a given parameter hash.
-      # @note This method must be thread-safe. Override #validate! unless you
-      # have a specific need.
-      # @param params [Hash] parameters to validate
+      # Validates a given request.
       # @param request [Grape::Request] the request currently being handled
       # @raise [Grape::Exceptions::Validation] if validation failed
       # @return [void]
-      def validate(params, request)
-        # Create a duplicate so any per-request instance variables are thread safe.
-        validator = dup
-        validator.request = request
-        validator.validate!(params)
+      def validate(request)
+        @request = request
+        validate!(request.params)
       end
 
       def validate!(params)

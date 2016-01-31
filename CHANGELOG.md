@@ -14,6 +14,7 @@
 * [#1280](https://github.com/ruby-grape/grape/pull/1280): Support `Rack::Sendfile` middleware - [@lfidnl](https://github.com/lfidnl).
 * [#1285](https://github.com/ruby-grape/grape/pull/1285): Add a warning for errors appearing in `after` callbacks - [@gregormelhorn](https://github.com/gregormelhorn).
 * [#1295](https://github.com/ruby-grape/grape/pull/1295): Add custom validation messages for parameter exceptions - [@railsmith](https://github.com/railsmith).
+* [#1276](https://github.com/ruby-grape/grape/pull/1276): Replace rack-mount with new router - [@namusyaka](https://github.com/namusyaka).
 * Your contribution here.
 
 #### Fixes

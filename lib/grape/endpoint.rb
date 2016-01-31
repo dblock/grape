@@ -110,7 +110,7 @@ module Grape
     end
 
     def routes
-      @routes ||= endpoints ? endpoints.collect(&:routes).flatten : prepare_routes
+      @routes ||= endpoints ? endpoints.collect(&:routes).flatten : to_routes
     end
 
     def reset_routes!
@@ -119,27 +119,34 @@ module Grape
       @routes = nil
     end
 
-    def mount_in(route_set)
+    def mount_in(router)
       if endpoints
-        endpoints.each do |e|
-          e.mount_in(route_set)
-        end
+        endpoints.each { |e| e.mount_in(router) }
       else
         reset_routes!
-
         routes.each do |route|
-          methods = [route.route_method]
-          if !namespace_inheritable(:do_not_route_head) && route.route_method == Grape::Http::Headers::GET
+          methods = [route.request_method]
+          if !namespace_inheritable(:do_not_route_head) && route.request_method == Grape::Http::Headers::GET
             methods << Grape::Http::Headers::HEAD
           end
           methods.each do |method|
-            route_set.add_route(self, {
-                                  path_info: route.route_compiled,
-                                  request_method: method
-                                }, route_info: route)
+            unless route.request_method.to_s.upcase == method
+              route = Grape::Router::Route.new(method, route.origin, route.attributes.to_h)
+            end
+            router.append(route.apply(self))
           end
         end
       end
+    end
+
+    def to_routes
+      route_options = prepare_default_route_attributes
+      map_routes do |method, path|
+        path = prepare_path(path)
+        params = merge_route_options(route_options.merge(suffix: path.suffix))
+        route = Router::Route.new(method, path.path, params)
+        route.apply(self)
+      end.flatten
     end
 
     def prepare_routes_requirements
@@ -150,41 +157,44 @@ module Grape
       end
     end
 
-    def prepare_routes_path_params(path)
-      path_params = {}
-
-      # named parameters in the api path
-      regex = Rack::Mount::RegexpWithNamedGroups.new(path)
-      named_params = regex.named_captures.map { |nc| nc[0] } - %w(version format)
-      named_params.each { |named_param| path_params[named_param] = '' }
-
-      # route parameters declared via desc or appended to the api declaration
-      route_params = options[:route_options][:params]
-      path_params.merge! route_params if route_params
-
-      path_params
+    def prepare_default_route_attributes
+      {
+        namespace: namespace,
+        format: prepare_format,
+        version: prepare_version,
+        requirements: prepare_routes_requirements,
+        prefix: namespace_inheritable(:root_prefix),
+        anchor: options[:route_options].fetch(:anchor, true),
+        settings: inheritable_setting.route.except(:saved_declared_params, :saved_validations),
+        forward_match: options[:forward_match]
+      }
     end
 
-    def prepare_routes
-      options[:method].map do |method|
-        options[:path].map do |path|
-          prepared_path = prepare_path(path)
-          anchor = options[:route_options].fetch(:anchor, true)
-          path = compile_path(prepared_path, anchor && !options[:app], prepare_routes_requirements)
-          request_method = (method.to_s.upcase unless method == :any)
-
-          Route.new(options[:route_options].clone.merge(
-                      prefix: namespace_inheritable(:root_prefix),
-                      version: namespace_inheritable(:version) ? namespace_inheritable(:version).join('|') : nil,
-                      namespace: namespace,
-                      method: request_method,
-                      path: prepared_path,
-                      params: prepare_routes_path_params(path),
-                      compiled: path,
-                      settings: inheritable_setting.route.except(:saved_declared_params, :saved_validations)
-          ))
+    def prepare_format
+      format = []
+      format << namespace_inheritable(:format) if namespace_inheritable(:format)
+      format << namespace_stackable(:format)   if namespace_stackable(:format).present?
+      if format.present? && namespace_stackable(:content_types)
+        content_types = namespace_stackable(:content_types).map do |content_type|
+          content_type.keys.first
         end
-      end.flatten
+        format = format.concat(content_types).flatten.compact.uniq
+      end
+      format.empty? ? nil : format.uniq
+    end
+
+    def prepare_version
+      version = namespace_inheritable(:version) || []
+      return if version.length == 0
+      version.length == 1 ? version.first.to_s : version
+    end
+
+    def merge_route_options(default = {})
+      options[:route_options].clone.reverse_merge(default)
+    end
+
+    def map_routes
+      options[:method].map { |method| options[:path].map { |path| yield method, path } }
     end
 
     def prepare_path(path)
@@ -194,13 +204,6 @@ module Grape
 
     def namespace
       @namespace ||= Namespace.joined_space_path(namespace_stackable(:namespace))
-    end
-
-    def compile_path(prepared_path, anchor = true, requirements = {})
-      endpoint_options = {}
-      endpoint_options[:version] = /#{namespace_inheritable(:version).join('|')}/ if namespace_inheritable(:version)
-      endpoint_options.merge!(requirements)
-      Rack::Mount::Strexp.compile(prepared_path, endpoint_options, %w( / . ? ), anchor)
     end
 
     def call(env)
@@ -275,11 +278,7 @@ module Grape
       (namespace_stackable(:middleware) || []).each do |m|
         m = m.dup
         block = m.pop if m.last.is_a?(Proc)
-        if block
-          b.use(*m, &block)
-        else
-          b.use(*m)
-        end
+        block ? b.use(*m, &block) : b.use(*m)
       end
 
       if namespace_inheritable(:version)
@@ -305,9 +304,7 @@ module Grape
     def build_helpers
       helpers = namespace_stackable(:helpers) || []
       Module.new do
-        helpers.each do |mod_to_include|
-          include mod_to_include
-        end
+        helpers.each { |mod_to_include| include mod_to_include }
       end
     end
 
@@ -348,9 +345,7 @@ module Grape
 
     def run_filters(filters, type = :other)
       ActiveSupport::Notifications.instrument('endpoint_run_filters.grape', endpoint: self, filters: filters, type: type) do
-        (filters || []).each do |filter|
-          instance_eval(&filter)
-        end
+        (filters || []).each { |filter| instance_eval(&filter) }
       end
       post_extension = DSL::InsideRoute.post_filter_methods(type)
       extend post_extension if post_extension

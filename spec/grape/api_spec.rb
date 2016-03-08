@@ -411,7 +411,7 @@ describe Grape::API do
       end
 
       subject.endpoints.first.routes.each do |route|
-        expect(route.route_path).to eql '/abc(.:format)'
+        expect(route.path).to eql '/abc(.:format)'
       end
 
       get '/abc'
@@ -2006,9 +2006,9 @@ XML
       it 'returns one route' do
         expect(subject.routes.size).to eq(1)
         route = subject.routes[0]
-        expect(route.route_version).to be_nil
-        expect(route.route_path).to eq('/ping(.:format)')
-        expect(route.route_method).to eq('GET')
+        expect(route.version).to be_nil
+        expect(route.path).to eq('/ping(.:format)')
+        expect(route.request_method).to eq('GET')
       end
     end
     describe 'api structure with two versions and a namespace' do
@@ -2036,18 +2036,18 @@ XML
       end
       it 'sets route paths' do
         expect(subject.routes.size).to be >= 2
-        expect(subject.routes[0].route_path).to eq('/:version/version(.:format)')
-        expect(subject.routes[1].route_path).to eq('/p/:version/n1/n2/version(.:format)')
+        expect(subject.routes[0].path).to eq('/:version/version(.:format)')
+        expect(subject.routes[1].path).to eq('/p/:version/n1/n2/version(.:format)')
       end
       it 'sets route versions' do
-        expect(subject.routes[0].route_version).to eq('v1')
-        expect(subject.routes[1].route_version).to eq('v2')
+        expect(subject.routes[0].version).to eq('v1')
+        expect(subject.routes[1].version).to eq('v2')
       end
       it 'sets a nested namespace' do
-        expect(subject.routes[1].route_namespace).to eq('/n1/n2')
+        expect(subject.routes[1].namespace).to eq('/n1/n2')
       end
       it 'sets prefix' do
-        expect(subject.routes[1].route_prefix).to eq('p')
+        expect(subject.routes[1].prefix).to eq('p')
       end
     end
     describe 'api structure with additional parameters' do
@@ -2068,9 +2068,9 @@ XML
         get '/split/a,b,c.json', token: ',', limit: '2'
         expect(last_response.body).to eq('["a","b,c"]')
       end
-      it 'sets route_params' do
+      it 'sets params' do
         expect(subject.routes.map { |route|
-          { params: route.route_params }
+          { params: route.params }
         }).to eq [
           {
             params: {
@@ -2098,9 +2098,9 @@ XML
         subject.get 'two' do
         end
       end
-      it 'sets route_params' do
+      it 'sets params' do
         expect(subject.routes.map { |route|
-          { params: route.route_params }
+          { params: route.params }
         }).to eq [
           {
             params: {
@@ -2129,9 +2129,9 @@ XML
         subject.get 'two' do
         end
       end
-      it 'sets route_params' do
+      it 'sets params' do
         expect(subject.routes.map { |route|
-          { params: route.route_params }
+          { params: route.params }
         }).to eq [
           {
             params: {
@@ -2153,7 +2153,7 @@ XML
       it 'exposed' do
         expect(subject.routes.count).to eq 1
         route = subject.routes.first
-        expect(route.route_settings[:custom]).to eq(key: 'value')
+        expect(route.settings[:custom]).to eq(key: 'value')
       end
     end
     describe 'status' do
@@ -2187,9 +2187,9 @@ XML
       subject.get :first do; end
       expect(subject.routes.length).to eq(1)
       route = subject.routes.first
-      expect(route.route_description).to eq('first method')
+      expect(route.description).to eq('first method')
       expect(route.route_foo).to be_nil
-      expect(route.route_params).to eq({})
+      expect(route.params).to eq({})
     end
     it 'describes methods separately' do
       subject.desc 'first method'
@@ -2198,7 +2198,7 @@ XML
       subject.get :second do; end
       expect(subject.routes.count).to eq(2)
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'first method', params: {} },
         { description: 'second method', params: {} }
@@ -2209,7 +2209,7 @@ XML
       subject.get :first do; end
       subject.get :second do; end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'first method', params: {} },
         { description: nil, params: {} }
@@ -2221,7 +2221,7 @@ XML
         get 'second' do; end
       end
       expect(subject.routes.map { |route|
-        { description: route.route_description, foo: route.route_foo, params: route.route_params }
+        { description: route.description, foo: route.route_foo, params: route.params }
       }).to eq [
         { description: 'ns second', foo: 'bar', params: {} }
       ]
@@ -2230,7 +2230,7 @@ XML
       subject.desc 'method', details: 'method details'
       subject.get 'method' do; end
       expect(subject.routes.map { |route|
-        { description: route.route_description, details: route.route_details, params: route.route_params }
+        { description: route.description, details: route.details, params: route.params }
       }).to eq [
         { description: 'method', details: 'method details', params: {} }
       ]
@@ -2241,7 +2241,7 @@ XML
         params[:s].reverse
       end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'Reverses a string.', params: { 's' => { desc: 'string to reverse', type: 'string' } } }
       ]
@@ -2262,7 +2262,7 @@ XML
         get do; end
       end
       routes_doc = subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }
       expect(routes_doc).to eq [
         { description: 'global description',
@@ -2292,7 +2292,7 @@ XML
       end
 
       routes_doc = subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }
       expect(routes_doc).to eq [
         { description: 'method',
@@ -2324,7 +2324,7 @@ XML
         end
       end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'method',
           params: {
@@ -2350,7 +2350,7 @@ XML
       end
       subject.get 'method' do; end
 
-      expect(subject.routes.map(&:route_params)).to eq [{
+      expect(subject.routes.map(&:params)).to eq [{
         'group1'         => { required: true, type: 'Array' },
         'group1[param1]' => { required: false, desc: 'group1 param1 desc' },
         'group1[param2]' => { required: true, desc: 'group1 param2 desc' },
@@ -2369,7 +2369,7 @@ XML
       end
       subject.get 'method' do; end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'nesting',
           params: {
@@ -2393,7 +2393,7 @@ XML
       end
       subject.get 'method' do; end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: nil, params: { 'one_param' => { required: true, desc: 'one param' } } }
       ]
@@ -2404,7 +2404,7 @@ XML
         params[:s].reverse
       end
       expect(subject.routes.map { |route|
-        { description: route.route_description, params: route.route_params }
+        { description: route.description, params: route.params }
       }).to eq [
         { description: 'Reverses a string.', params: { 's' => { desc: 'string to reverse', type: 'string' } } }
       ]
@@ -2512,8 +2512,8 @@ XML
           mount app
         end
         expect(subject.routes.size).to eq(2)
-        expect(subject.routes.first.route_path).to match(%r{\/cool\/awesome})
-        expect(subject.routes.last.route_path).to match(%r{\/cool\/sauce})
+        expect(subject.routes.first.path).to match(%r{\/cool\/awesome})
+        expect(subject.routes.last.path).to match(%r{\/cool\/sauce})
       end
 
       it 'mounts on a path' do
@@ -2732,10 +2732,10 @@ XML
     context 'plain' do
       before(:each) do
         subject.get '/' do
-          route.route_path
+          route.path
         end
         subject.get '/path' do
-          route.route_path
+          route.path
         end
       end
       it 'provides access to route info' do
@@ -2749,11 +2749,11 @@ XML
       before(:each) do
         subject.desc 'returns description'
         subject.get '/description' do
-          route.route_description
+          route.description
         end
         subject.desc 'returns parameters', params: { 'x' => 'y' }
         subject.get '/params/:id' do
-          route.route_params[params[:id]]
+          route.params[params[:id]]
         end
       end
       it 'returns route description' do

@@ -1,6 +1,7 @@
 0.15.1 (Next)
 =============
 
+* [#1276](https://github.com/ruby-grape/grape/pull/1276): Replace rack-mount with new router - [@namusyaka](https://github.com/namusyaka).
 * Your contribution here.
 
 0.15.0 (3/8/2016)

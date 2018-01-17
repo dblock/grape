@@ -19,8 +19,8 @@ module Grape
         # Opens a root-level ParamsScope, defining parameter coercions and
         # validations for the endpoint.
         # @yield instance context of the new scope
-        def params(&block)
-          Grape::Validations::ParamsScope.new(api: self, type: Hash, &block)
+        def params(opts = {}, &block)
+          Grape::Validations::ParamsScope.new({ api: self, type: Hash }.merge(opts), &block)
         end
 
         def document_attribute(names, opts)

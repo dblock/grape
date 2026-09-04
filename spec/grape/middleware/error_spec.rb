@@ -97,6 +97,18 @@ describe Grape::Middleware::Error do
         ActiveSupport::DeprecationException, /rescue handler is deprecated/
       )
     end
+
+    it 'treats the Hash as an error response once the deprecation warning is silenced' do
+      original_behavior = Grape.deprecator.behavior
+      Grape.deprecator.behavior = :silence
+      begin
+        get '/'
+        expect(last_response.status).to eq(500)
+        expect(last_response.body).to eq('oops')
+      ensure
+        Grape.deprecator.behavior = original_behavior
+      end
+    end
   end
 
   # Rendering happens inside #call!'s rescue clause, so it is not covered by
@@ -421,6 +433,34 @@ describe Grape::Middleware::Error do
         expect(response.status).to eq(500)
         expect(response.body).to eq('Invalid response')
       end
+    end
+  end
+
+  describe '#error!' do
+    it 'sets the status and renders a formatted error response' do
+      env = Rack::MockRequest.env_for('/')
+      endpoint = Spec::Support::EndpointFaker::FakerAPI.endpoints.first
+      env[Grape::Env::API_ENDPOINT] = endpoint
+      middleware = described_class.new(->(_env) {})
+      middleware.instance_variable_set(:@env, env)
+
+      expect(endpoint).to receive(:status).with(422)
+      response = middleware.__send__(:error!, 'failure', 422)
+      expect(response.status).to eq(422)
+      expect(response.body).to eq(['failure'])
+    end
+  end
+
+  describe '#error?' do
+    subject(:middleware) { described_class.new(->(_env) {}) }
+
+    it 'returns true for a Grape::Exceptions::ErrorResponse' do
+      response = Grape::Exceptions::ErrorResponse.new(message: 'oops', status: 500, headers: {})
+      expect(middleware.__send__(:error?, response)).to be true
+    end
+
+    it 'returns false for any other object' do
+      expect(middleware.__send__(:error?, 'not an error')).to be false
     end
   end
 end

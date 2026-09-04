@@ -7,6 +7,16 @@ describe Grape::Router do
         ActiveSupport::DeprecationException, /Grape::Util::PathNormalizer/
       )
     end
+
+    it 'delegates to Grape::Util::PathNormalizer once the deprecation warning is emitted' do
+      original_behavior = Grape.deprecator.behavior
+      Grape.deprecator.behavior = :silence
+      begin
+        expect(described_class.normalize_path('/foo/')).to eq(Grape::Util::PathNormalizer.call('/foo/'))
+      ensure
+        Grape.deprecator.behavior = original_behavior
+      end
+    end
   end
 
   describe 'request-time map isolation' do
@@ -136,6 +146,15 @@ describe Grape::Router do
     it 'returns the last cascading response when nothing else answers' do
       append_route(cascading)
       append_route(cascading)
+      router.compile!
+
+      status, headers, = router.call(Rack::MockRequest.env_for('/hello'))
+      expect(status).to eq(404)
+      expect(headers['X-Cascade']).to eq('pass')
+    end
+
+    it 'marks the request as cascaded when only an ANY route responds' do
+      append_route(cascading, '*')
       router.compile!
 
       status, headers, = router.call(Rack::MockRequest.env_for('/hello'))

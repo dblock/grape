@@ -24,5 +24,18 @@ describe Grape::Util::Translation do
         expect { translator.translate_message(:reserved_key_test) }.to raise_error(I18n::ReservedInterpolationKey)
       end
     end
+
+    context 'when an explicit locale is given' do
+      it 'passes the locale through to I18n.translate' do
+        expect(I18n).to receive(:translate).with(:missing_key, hash_including(locale: :en)).and_call_original
+        translator.translate_message(:missing_key, locale: :en)
+      end
+    end
+
+    context 'when an explicit default is given and the key is missing' do
+      it 'returns the given default instead of the dotted key path' do
+        expect(translator.translate_message(:missing_key, default: 'fallback')).to eq('fallback')
+      end
+    end
   end
 end

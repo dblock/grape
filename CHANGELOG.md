@@ -68,6 +68,7 @@
 * [#2893](https://github.com/ruby-grape/grape/pull/2893): Scrub the format extension rather than the whole request path when negotiating a format - [@ericproulx](https://github.com/ericproulx).
 * [#2894](https://github.com/ruby-grape/grape/pull/2894): Read the request method once in `default_status` instead of asking through `post?` and `delete?` - [@ericproulx](https://github.com/ericproulx).
 * [#2896](https://github.com/ruby-grape/grape/pull/2896): Bring test suite line coverage to 100% - [@dblock](https://github.com/dblock).
+* [#2897](https://github.com/ruby-grape/grape/pull/2897): Improve test suite branch coverage - [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 #### Fixes

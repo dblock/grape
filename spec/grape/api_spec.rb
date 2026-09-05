@@ -5311,7 +5311,7 @@ describe Grape::API do
         rescue_from :all do
           error!(context.env, 400)
         end
-        get { raise ArgumentError, 'Oops!' }
+        get { raise ArgumentError, 'oops' }
       end
     end
 

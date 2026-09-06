@@ -392,7 +392,7 @@ describe Grape::DSL::InsideRoute do
           subject.present 'dummy1', with: entity_mock_one
           expect do
             subject.present 'dummy2', with: entity_mock_two
-          end.to raise_error ArgumentError, 'representation of type String cannot be merged'
+          end.to raise_error ArgumentError, 'representation of type `String` cannot be merged'
         end
       end
     end
